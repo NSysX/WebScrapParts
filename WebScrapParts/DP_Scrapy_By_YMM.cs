@@ -12,7 +12,7 @@ namespace WebScrapParts
     {
         public async Task DPScrapByYmm(List<AppYearMakeModel> yearMakeModels)
         {
-            TimeSpan timeSpan = TimeSpan.FromSeconds(55);
+            TimeSpan timeSpan = TimeSpan.FromMinutes(15);
             var db = new WebScrapPartsDbContext();
             string linkReal = $@"https://www.drivparts.com/";
 
@@ -33,7 +33,7 @@ namespace WebScrapParts
                 driver.Navigate().GoToUrl(linkReal);
 
                 // Llena el combobox de anios
-                //   Thread.Sleep(1000);
+                Thread.Sleep(1000);
                 espera.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@id=\"years\"]/div/div[1]/input")));
                 driver.FindElement(By.XPath("//*[@id=\"years\"]/div/div[1]/input")).SendKeys(registro.YearId.ToString().Trim());
                 driver.FindElement(By.XPath("//*[@id=\"years\"]/div/div[1]/input")).SendKeys(Keys.Enter);
@@ -58,7 +58,9 @@ namespace WebScrapParts
 
                 if (!encontrado)
                 {
-                    Console.WriteLine("============ xxxxx {0}", registro.MakeName);
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("============> ARAMDORA NO ENCONTRADA {0}", registro.MakeName);
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     continue;
                 }
 
@@ -84,6 +86,7 @@ namespace WebScrapParts
 
                 if (encontrado)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Encontrado => {0},{1},{2}", registro.YearId, registro.MakeName, registro.ModelName);
                     //--- actualizo el campo encontrado a verdadero
                     await db.AppYearMakeModel.Where(x => x.Id == registro.Id)
@@ -91,17 +94,25 @@ namespace WebScrapParts
                 }
                 else
                 {
-                    Console.WriteLine("============ MODELO NO ENCONTRADO => {0}", registro.ModelName);
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("============ MODELO NO ENCONTRADO => {0},{1},{2}", registro.YearId, registro.MakeName, registro.ModelName);
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     continue;
                 }
 
                 driver.FindElement(By.XPath("//*[@id=\"models\"]/div/div[1]/input")).SendKeys(registro.ModelName.Trim());
                 driver.FindElement(By.XPath("//*[@id=\"models\"]/div/div[1]/input")).SendKeys(Keys.Enter);
+                driver.FindElement(By.XPath("//*[@id=\"models\"]/div/div[1]/input")).SendKeys(Keys.Tab);
 
+
+                Thread.Sleep(3000);
                 // Da click en el boton buscar
-                driver.FindElement(By.XPath("//*[@id=\"page-content\"]/div/div[1]/div/div/div/div[2]/div/div/div/div[2]/div/div[2]/button")).Click();
+                //*[@id=\"page-content\"]/div/div[1]/div/div/div/div[2]/div/div/div/div[2]/div/div[2]/button
+                // driver.FindElement(By.XPath("//*[@id=\"page-content\"]/div/div[1]/div/div/div/div[2]/div/div/div/div[2]/div/div[2]/button")).Click();
+                driver.FindElement(By.XPath("//*[@id=\"page-content\"]/div/div[1]/div/div/div/div[2]/div/div/div/div[2]/div/div[2]/button")).SendKeys(Keys.Enter);
 
-                // Thread.Sleep(3000);
+
+                Thread.Sleep(3000);
 
                 // ------- AQUI HAY QUE HACER EL CICLO DE NUEVO PARA CADA PAGINA DE RESULTADOS
 
@@ -111,7 +122,14 @@ namespace WebScrapParts
                 {
                     Console.WriteLine("Entro al While wwwwwwwww");
                     // Thread.Sleep(3000);
-                    await Task.Delay(3000);
+                    //await Task.Delay(3000);
+
+                    //var sinResultado = driver.FindElements(By.ClassName("no-results"));
+
+                    //if( sinResultado.Count() > 0)
+                    //{
+
+                    //}
 
                     // Verifico que hay Resultados todas las listas
                     espera.Until(ExpectedConditions.ElementIsVisible(
@@ -123,7 +141,9 @@ namespace WebScrapParts
                     // si no encuentra resultados de Refacciones
                     if (refacciones.Count == 0)
                     {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("NO HAY RESULTADOS DE REFACCIONES xxxxxxxxxxxxx");
+                        Console.ForegroundColor = ConsoleColor.Gray;
                         continue;
                     }
 
@@ -132,7 +152,7 @@ namespace WebScrapParts
                     foreach (var refaccion in refacciones)
                     {
                         // si refaccion esta vacia 
-                        if (string.IsNullOrEmpty(refaccion.Text.Trim()))
+                        if(string.IsNullOrEmpty(refaccion.Text.Trim()))
                         {
                             Console.WriteLine("|========== Esta vacio la refaccion ==========|");
                             continue;
@@ -144,7 +164,9 @@ namespace WebScrapParts
                         // mando crear el objeto 
                         appYearMakeModelDetails = new AppYearMakeModelDetails(registro.Id, detallesRefaccion);
 
+                        Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine($"aplicacion => {refaccion.Text}");
+                        Console.ForegroundColor = ConsoleColor.Gray;
 
                         // Agrego los objetos de cada refaccion a la lista
                         aYMMD.Add(appYearMakeModelDetails);
@@ -177,7 +199,9 @@ namespace WebScrapParts
                     if (paginacion.Count == 0)
                     {
                         Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("NO EXISTE EL BOTON DE PAGINACION @@@@@@@@@@@");
+                        Console.ForegroundColor = ConsoleColor.Gray;
                         Console.WriteLine();
                         break;
                     }
@@ -200,6 +224,7 @@ namespace WebScrapParts
                     int paginaActual = Int32.Parse(numeroActualPagina.GetAttribute("value").Trim());
 
                     Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"Total Paginas Actualizado = {totalPaginas}");
                     Console.WriteLine($"Termina PaginaActual = {paginaActual}");
                     Console.WriteLine();

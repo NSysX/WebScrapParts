@@ -27,27 +27,16 @@ var db = new WebScrapPartsDbContext();
 //scrapySelenium.ScrapDrivParts(registrosParaScrapp);
 
 //*********************************************
-List<AppYearMakeModel> appYearMakeModels97 = await db.AppYearMakeModel
+
+
+List<AppYearMakeModel> appYearMakeModelsTodos = await db.AppYearMakeModel
                                                    .AsNoTracking()
-                                                   .Where(x => x.Found == false && x.YearId == 1997)
+                                                   .Where(x => x.Scratch == false && x.YearId >= 2004)
+                                                   .OrderBy(x => x.YearId)
                                                    .ToListAsync();
 
-List<AppYearMakeModel> appYearMakeModels98 = await db.AppYearMakeModel
-                                                   .AsNoTracking()
-                                                   .Where(x => x.Found == false && x.YearId == 1998)
-                                                   .ToListAsync();
 
-List<AppYearMakeModel> appYearMakeModels99 = await db.AppYearMakeModel
-                                                   .AsNoTracking()
-                                                   .Where(x => x.Found == false && x.YearId == 1999)
-                                                   .ToListAsync();
-
-List<AppYearMakeModel> appYearMakeModels00 = await db.AppYearMakeModel
-                                                   .AsNoTracking()
-                                                   .Where(x => x.Found == false && x.YearId == 2000)
-                                                   .ToListAsync();
-
-if (appYearMakeModels97.Count == 0)
+if (appYearMakeModelsTodos.Count == 0)
 {
     Console.WriteLine("No se Encontraron Registros");
     return;
@@ -57,10 +46,10 @@ var dpYMM = new DP_Scrapy_By_YMM();
 
 var tareas = new List<Task>()
 {
-    dpYMM.DPScrapByYmm(appYearMakeModels97),
-    dpYMM.DPScrapByYmm(appYearMakeModels98),
-    dpYMM.DPScrapByYmm(appYearMakeModels99),
-    dpYMM.DPScrapByYmm(appYearMakeModels00),
+   // dpYMM.DPScrapByYmm(appYearMakeModels92),
+    //dpYMM.DPScrapByYmm(appYearMakeModels93),
+    dpYMM.DPScrapByYmm(appYearMakeModelsTodos),
+    //dpYMM.DPScrapByYmm(appYearMakeModels20),
 };
 
 await Task.WhenAll(tareas);

@@ -21,10 +21,12 @@ namespace WebScrapParts.Entities
             var diccionarioCriteria = new Dictionary<string, List<string>>();
             criteria = "";
             string ultimaLlave = "";
+
+            // check for interactiveDiagram is in it
+            bool isInteractiveDiag = infoRefaccion.Contains("Interactive Diagrams");
             infoRefaccion = infoRefaccion.Replace("WHERE TO BUY,", "");
             infoRefaccion = infoRefaccion.Replace("BUY NOW,", "");
             infoRefaccion = infoRefaccion.Replace("Interactive Diagrams,", "");
-            // BUY NOW
 
             // es un solo objeto tiene solo una linea
             var listaDatosRefaccion = new List<string>(infoRefaccion.Split(",").ToList());
@@ -33,20 +35,30 @@ namespace WebScrapParts.Entities
             this.PartNumber = listaDatosRefaccion[0].Replace("Part No:", "").Trim();
             this.BrandName = listaDatosRefaccion[1].Trim();
             this.Description = listaDatosRefaccion[2].Trim();
+            this.IsInteractiveDiagrams = isInteractiveDiag;
 
             for (int i = 3; i < listaDatosRefaccion.Count(); i++)
             {
                 criteria += string.IsNullOrEmpty(criteria) ?  "" : "," ;
                 criteria += listaDatosRefaccion[i].Trim();
 
-                if(listaDatosRefaccion[i].Trim().Replace(":","") == "QUALIFIERS" || 
+                if (listaDatosRefaccion[i].Trim().Replace(":", "") == "QUALIFIERS" ||
                     listaDatosRefaccion[i].Trim().Replace(":", "") == "APPLICATION CRITERIA")
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     ultimaLlave = listaDatosRefaccion[i].Trim().Replace(":", "");
                     // APPLICATION CRITERIA 
                     // QUALIFIERS: hay que quitar los dos puntos
                     // abro un registro
+                    Console.WriteLine($"Ultima Llave  = { ultimaLlave }");
+
+                    if (string.IsNullOrEmpty(ultimaLlave.Trim()))
+                    {
+                        Console.WriteLine($" #### NO HAY LLAVE PARA EL DIC => { infoRefaccion } ");
+                    }
+
                     diccionarioCriteria.Add(ultimaLlave, new());
+                    Console.ForegroundColor = ConsoleColor.Gray;
                     continue;
                 }
 
@@ -62,7 +74,8 @@ namespace WebScrapParts.Entities
                                        string brandName,
                                        string Description,
                                        string appCriteria,
-                                       string appCriteriaJson)
+                                       string appCriteriaJson,
+                                       bool isInteractiveDiagrams)
         {
             this.IdAppYearMakeModel = idAppYearMakeModel;
             this.PartNumber = partNumber;
@@ -70,14 +83,16 @@ namespace WebScrapParts.Entities
             this.Description = Description;
             this.AppCriteria = appCriteria;
             this.AppCriteriaJson = appCriteriaJson;
+            this.IsInteractiveDiagrams = isInteractiveDiagrams;
         }
 
-        public int Id { get; set; }
+        public long Id { get; set; }
         public int IdAppYearMakeModel { get; set; }
         public string PartNumber { get; set; } = string.Empty;
         public string BrandName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string AppCriteria { get; set; } = string.Empty;
         public string AppCriteriaJson { get; set; } = string.Empty;
+        public bool IsInteractiveDiagrams { get; set; }
     }
 }
